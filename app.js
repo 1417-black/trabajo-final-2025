@@ -189,3 +189,162 @@ function BibliotecaJuegos() {
 }
 
 export default BibliotecaJuegos;
+import React, { useState } from 'react';
+
+// ===== TARJETA DE JUEGO =====
+export function TarjetaJuego({ juego, onEditar, onEliminar }) {
+  const estrellas = '⭐'.repeat(Math.round(juego.puntuacion));
+
+  return (
+    <div className={`tarjeta-juego ${juego.completado ? 'completado' : ''}`}>
+      <img src={juego.portada} alt={juego.titulo} className="portada" />
+      
+      <div className="info-juego">
+        <h3>{juego.titulo}</h3>
+        <p className="plataforma">🎮 {juego.plataforma}</p>
+        <p className="genero">🏷️ {juego.genero}</p>
+        <p className="puntuacion">{estrellas || '⭐ Sin calificar'}</p>
+        <p className="horas">⏱️ {juego.horasJugadas}h jugadas</p>
+        
+        {juego.completado && (
+          <span className="badge-completado">✅ Completado</span>
+        )}
+      </div>
+
+      <div className="acciones">
+        <button onClick={onEditar} className="btn-editar">✏️</button>
+        <button onClick={onEliminar} className="btn-eliminar">🗑️</button>
+      </div>
+    </div>
+  );
+}
+
+// ===== FORMULARIO DE JUEGO =====
+function FormularioJuego({ juego, onGuardar, onCancelar }) {
+  const [datos, setDatos] = useState(juego || {
+    titulo: '',
+    portada: '',
+    plataforma: '',
+    genero: '',
+    puntuacion: 0,
+    completado: false,
+    horasJugadas: 0,
+    desarrollador: '',
+    anoLanzamiento: new Date().getFullYear()
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onGuardar(datos);
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setDatos({
+      ...datos,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
+
+  return (
+    <div className="modal">
+      <div className="formulario-container">
+        <h2>{juego ? '✏️ Editar Juego' : '➕ Agregar Juego'}</h2>
+        
+        <form onSubmit={handleSubmit} className="formulario">
+          <input
+            type="text"
+            name="titulo"
+            placeholder="Título del juego *"
+            value={datos.titulo}
+            onChange={handleChange}
+            required
+          />
+
+          <input
+            type="url"
+            name="portada"
+            placeholder="URL de la portada"
+            value={datos.portada}
+            onChange={handleChange}
+          />
+
+          <select name="plataforma" value={datos.plataforma} onChange={handleChange} required>
+            <option value="">Selecciona plataforma *</option>
+            <option value="PlayStation">PlayStation</option>
+            <option value="Xbox">Xbox</option>
+            <option value="Nintendo Switch">Nintendo Switch</option>
+            <option value="PC">PC</option>
+            <option value="Mobile">Mobile</option>
+          </select>
+
+          <input
+            type="text"
+            name="genero"
+            placeholder="Género (Ej: Aventura, RPG) *"
+            value={datos.genero}
+            onChange={handleChange}
+            required
+          />
+
+          <div className="campo-numero">
+            <label>Puntuación (0-5 estrellas):</label>
+            <input
+              type="number"
+              name="puntuacion"
+              min="0"
+              max="5"
+              step="0.5"
+              value={datos.puntuacion}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="campo-numero">
+            <label>Horas jugadas:</label>
+            <input
+              type="number"
+              name="horasJugadas"
+              min="0"
+              value={datos.horasJugadas}
+              onChange={handleChange}
+            />
+          </div>
+
+          <input
+            type="text"
+            name="desarrollador"
+            placeholder="Desarrollador"
+            value={datos.desarrollador}
+            onChange={handleChange}
+          />
+
+          <input
+            type="number"
+            name="anoLanzamiento"
+            placeholder="Año de lanzamiento"
+            value={datos.anoLanzamiento}
+            onChange={handleChange}
+          />
+
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              name="completado"
+              checked={datos.completado}
+              onChange={handleChange}
+            />
+            ✅ Juego completado
+          </label>
+
+          <div className="botones-formulario">
+            <button type="submit" className="btn-guardar">💾 Guardar</button>
+            <button type="button" onClick={onCancelar} className="btn-cancelar">❌ Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default FormularioJuego;
