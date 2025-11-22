@@ -661,3 +661,131 @@ function FormularioResena({ resena, juegos, onGuardar, onCancelar }) {
 }
 
 export default ListaResenas;
+import React, { useState, useEffect } from 'react';
+
+const API_URL = 'http://localhost:5000/api';
+
+// ===== ESTADÍSTICAS PERSONALES =====
+function EstadisticasPersonales() {
+  const [juegos, setJuegos] = useState([]);
+  const [resenas, setResenas] = useState([]);
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    try {
+      const [juegoRes, resenaRes] = await Promise.all([
+        fetch(`${API_URL}/juegos`),
+        fetch(`${API_URL}/resenas`)
+      ]);
+      setJuegos(await juegoRes.json());
+      setResenas(await resenaRes.json());
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+    }
+  };
+
+  const stats = {
+    totalJuegos: juegos.length,
+    completados: juegos.filter(j => j.completado).length,
+    horasTotales: juegos.reduce((sum, j) => sum + (j.horasJugadas || 0), 0),
+    promedioCalificacion: juegos.length > 0 
+      ? (juegos.reduce((sum, j) => sum + j.puntuacion, 0) / juegos.length).toFixed(1)
+      : 0,
+    totalResenas: resenas.length,
+    plataformaFavorita: calcularPlataformaFavorita(juegos),
+    generoFavorito: calcularGeneroFavorito(juegos)
+  };
+
+  function calcularPlataformaFavorita(juegos) {
+    if (juegos.length === 0) return 'N/A';
+    const conteo = {};
+    juegos.forEach(j => conteo[j.plataforma] = (conteo[j.plataforma] || 0) + 1);
+    return Object.keys(conteo).reduce((a, b) => conteo[a] > conteo[b] ? a : b);
+  }
+
+  function calcularGeneroFavorito(juegos) {
+    if (juegos.length === 0) return 'N/A';
+    const conteo = {};
+    juegos.forEach(j => conteo[j.genero] = (conteo[j.genero] || 0) + 1);
+    return Object.keys(conteo).reduce((a, b) => conteo[a] > conteo[b] ? a : b);
+  }
+
+  return (
+    <div className="estadisticas">
+      <h2>📊 Tus Estadísticas de Juego</h2>
+      
+      <div className="stats-grid">
+        <div className="stat-card purple">
+          <div className="stat-icono">🎮</div>
+          <div className="stat-numero">{stats.totalJuegos}</div>
+          <div className="stat-label">Juegos en Biblioteca</div>
+        </div>
+
+        <div className="stat-card green">
+          <div className="stat-icono">✅</div>
+          <div className="stat-numero">{stats.completados}</div>
+          <div className="stat-label">Completados</div>
+        </div>
+
+        <div className="stat-card blue">
+          <div className="stat-icono">⏱️</div>
+          <div className="stat-numero">{stats.horasTotales}h</div>
+          <div className="stat-label">Horas Totales</div>
+        </div>
+
+        <div className="stat-card orange">
+          <div className="stat-icono">⭐</div>
+          <div className="stat-numero">{stats.promedioCalificacion}</div>
+          <div className="stat-label">Promedio Calificación</div>
+        </div>
+
+        <div className="stat-card pink">
+          <div className="stat-icono">✍️</div>
+          <div className="stat-numero">{stats.totalResenas}</div>
+          <div className="stat-label">Reseñas Escritas</div>
+        </div>
+
+        <div className="stat-card cyan">
+          <div className="stat-icono">🎯</div>
+          <div className="stat-numero">{stats.plataformaFavorita}</div>
+          <div className="stat-label">Plataforma Favorita</div>
+        </div>
+
+        <div className="stat-card yellow">
+          <div className="stat-icono">🏷️</div>
+          <div className="stat-numero">{stats.generoFavorito}</div>
+          <div className="stat-label">Género Favorito</div>
+        </div>
+
+        <div className="stat-card red">
+          <div className="stat-icono">🏆</div>
+          <div className="stat-numero">
+            {stats.totalJuegos > 0 ? Math.round((stats.completados / stats.totalJuegos) * 100) : 0}%
+          </div>
+          <div className="stat-label">Tasa Completado</div>
+        </div>
+      </div>
+
+      <div className="top-juegos">
+        <h3>🏆 Top 5 Juegos Mejor Calificados</h3>
+        <div className="top-lista">
+          {juegos
+            .sort((a, b) => b.puntuacion - a.puntuacion)
+            .slice(0, 5)
+            .map((juego, index) => (
+              <div key={juego._id} className="top-item">
+                <span className="posicion">{index + 1}</span>
+                <span className="nombre">{juego.titulo}</span>
+                <span className="puntuacion">{'⭐'.repeat(Math.round(juego.puntuacion))}</span>
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default EstadisticasPersonales;
