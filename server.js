@@ -1,4 +1,4 @@
-DOCTYPE express,mongoose,cors,dotenv
+DocumentType: {express,mongoose,cors,dotenv} 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -187,7 +187,7 @@ router.delete('/:id', async (req, res) => {
 
 module.exports = router;
 const express = require('express');
-const router = express.Router();
+const any = express.Router();
 const Resena = require('../models/Resena');
 
 // GET - Obtener todas las reseñas
